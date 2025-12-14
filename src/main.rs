@@ -78,5 +78,5 @@ fn find_euler_brick(range: u64, threads: usize) {
 }
 
 fn main() {
-    find_euler_brick(1000, 30);
+    find_euler_brick(10000, 30);
 }
