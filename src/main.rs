@@ -27,18 +27,11 @@ fn find_euler_brick(range: u64, break_after_one: bool) {
     // let b = 44u64;
     // let c = 240u64;
 
-    let mut bricks_checked: Vec<Vec<u64>> = vec![];
-
-    let mut a: u64 = 1;
-    let mut b: u64 = 1;
-    let mut c: u64 = 1;
     let mut break_loop: bool = false;
 
-    while a < range {
-        while b < range {
-            while c < range {
-                bricks_checked.push(vec![a, b, c]);
-
+    for a in 1..range {
+        for b in 1..range {
+            for c in 1..range {
                 if is_euler_brick(a, b, c) {
                     if break_after_one {
                         break_loop = break_after_one;
@@ -50,19 +43,14 @@ fn find_euler_brick(range: u64, break_after_one: bool) {
                         a, b, c
                     );
                 }
-                c += 1;
             }
             if break_loop {
                 break;
             }
-            c = 1;
-            b += 1;
         }
         if break_loop {
             break;
         }
-        b = 1;
-        a += 1;
     }
 }
 
