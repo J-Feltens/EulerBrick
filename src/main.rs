@@ -1,17 +1,5 @@
-fn combinations_with_repetition(n: u64, k: u64) -> u64 {
-    let nn = n + k - 1;
-    binomial(nn, k)
-}
-
-fn binomial(n: u64, k: u64) -> u64 {
-    let k = k.min(n - k);
-    let mut result = 1u64;
-
-    for i in 0..k {
-        result = result * (n - i) / (i + 1);
-    }
-    result
-}
+use linspace::Linspace;
+use std::thread;
 
 fn is_euler_brick(a: u64, b: u64, c: u64) -> bool {
     // calc diagonals squared
@@ -22,28 +10,46 @@ fn is_euler_brick(a: u64, b: u64, c: u64) -> bool {
     (d1).fract() == 0.0 && (d2).fract() == 0.0 && (d3).fract() == 0.0
 }
 
-fn find_euler_brick(range: u64, break_after_one: bool) {
+fn find_euler_brick(range: u64, threads: usize, break_after_one: bool) {
     // let a = 117u64;
     // let b = 44u64;
     // let c = 240u64;
 
     let mut break_loop: bool = false;
+    let mut handles = vec![thread::spawn(|| {}); threads];
 
     for a in 1..range {
         for b in 1..range {
-            for c in 1..range {
-                if is_euler_brick(a, b, c) {
-                    if break_after_one {
-                        break_loop = break_after_one;
-                        break;
-                    }
+            // start multithreading in the third nest
+            let section_idxs = (0u64..range).linspace(threads).collect();
 
-                    println!(
-                        "Found non-perfect euler brick at a = {}, b = {}, c = {}",
-                        a, b, c
-                    );
-                }
+            let mut handles: vec![];
+            for i in 0..threads {
+                handles[i] = thread::spawn(|| {
+                    // thread body
+                    let section_start = section_idxs[i];
+                    let section_end = if i < threads - 1 {
+                        section_idxs[i + 1]
+                    } else {
+                        range
+                    };
+
+                    for c in section_start as u64..section_end as u64 {
+                        if is_euler_brick(a, b, c) {
+                            if break_after_one {
+                                break_loop = break_after_one;
+                                break;
+                            }
+
+                            println!(
+                                "Found non-perfect euler brick at a = {}, b = {}, c = {}",
+                                a, b, c
+                            );
+                        }
+                    }
+                });
             }
+
             if break_loop {
                 break;
             }
@@ -55,5 +61,5 @@ fn find_euler_brick(range: u64, break_after_one: bool) {
 }
 
 fn main() {
-    find_euler_brick(1000, false);
+    find_euler_brick(1000, 10, false);
 }
