@@ -1,8 +1,29 @@
 use std::fs::File;
 use std::io::{BufWriter, Write};
+use std::thread;
+use std::thread::JoinHandle;
 use tqdm::pbar;
 
 const DEFAULT_RANGE: (u64, u64) = (1, 10_000);
+
+fn linspace(start: u64, end: u64, steps: usize) -> Vec<u64> {
+    /*
+       generates array [start, end)
+    */
+    assert!(steps > 0);
+    assert!(start < end);
+
+    let range = end - start;
+    let mut v = Vec::with_capacity(steps);
+
+    for i in 0..steps {
+        // integer interpolation
+        let value = start + (range * i as u64) / steps as u64;
+        v.push(value);
+    }
+
+    v
+}
 
 fn is_euler_triangle(a: u64, b: u64) -> bool {
     // calc diagonals squared
@@ -74,7 +95,22 @@ fn find_euler_triangles_mt(a_range: (u64, u64), b_range: (u64, u64)) -> Vec<(u64
     triangles
 }
 
-fn find_euler_triangles(range: (u64, u64), threads: usize) -> Vec<(u64, u64)> {}
+fn find_euler_triangles(range: (u64, u64), threads: usize) -> Vec<(u64, u64)> {
+    let mut triangles = Vec::new();
+
+    // setup multithreading
+    let section_idxs = linspace(range.0, range.1, threads);
+    let mut handles: Vec<JoinHandle<T>> = Vec::new();
+
+    for section in section_idxs.iter() {
+        let handle = thread::spawn(move || {
+            // spawn new compute thread
+        });
+        handles.push(handle);
+    }
+
+    triangles
+}
 
 fn main() {
     let range = (1, 1_000_000);
