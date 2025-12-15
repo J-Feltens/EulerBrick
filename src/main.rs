@@ -89,7 +89,6 @@ fn find_euler_triangles(range: (u64, u64), threads: usize) -> Vec<(u64, u64)> {
         };
         let handle = thread::spawn(move || {
             // spawn new compute thread
-            dbg!(range_from, range_to);
             find_euler_triangles_mt((range_from, range_to), range)
         });
         handles.push(handle);
