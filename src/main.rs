@@ -52,28 +52,6 @@ fn store_triangles(triangles: &Vec<(u64, u64)>, path: &str) {
     }
 }
 
-/*
-       let handle = thread::spawn(move || {
-           // spawn new compute thread
-           find_euler_brick_mt_special((start_idx, end_idx), range);
-       });
-       handles.push(handle);
-
-       println!(
-           "started thread {}/{} to compute interval [{}, {}]",
-           section + 1,
-           threads,
-           start_idx,
-           end_idx
-       );
-   }
-
-   // Wait for all threads to complete
-   for handle in handles {
-       handle.join().unwrap();
-   }
-*/
-
 fn find_euler_triangles_mt(a_range: (u64, u64), b_range: (u64, u64)) -> Vec<(u64, u64)> {
     assert!(a_range.0 <= a_range.1);
     assert!(b_range.0 <= b_range.1);
@@ -100,13 +78,26 @@ fn find_euler_triangles(range: (u64, u64), threads: usize) -> Vec<(u64, u64)> {
 
     // setup multithreading
     let section_idxs = linspace(range.0, range.1, threads);
-    let mut handles: Vec<JoinHandle<T>> = Vec::new();
+    let mut handles: Vec<JoinHandle<Vec<(u64, u64)>>> = Vec::new();
 
-    for section in section_idxs.iter() {
+    for i in 0..section_idxs.len() {
+        let range_from = section_idxs[i];
+        let range_to = if i < section_idxs.len() - 1 {
+            section_idxs[i + 1]
+        } else {
+            range.1
+        };
         let handle = thread::spawn(move || {
             // spawn new compute thread
+            dbg!(range_from, range_to);
+            find_euler_triangles_mt((range_from, range_to), range)
         });
         handles.push(handle);
+    }
+
+    for handle in handles {
+        let mut triangles_partial = handle.join().unwrap();
+        triangles.append(&mut triangles_partial);
     }
 
     triangles
@@ -114,7 +105,7 @@ fn find_euler_triangles(range: (u64, u64), threads: usize) -> Vec<(u64, u64)> {
 
 fn main() {
     let range = (1, 1_000_000);
-    let threads = 3;
+    let threads = 30;
 
     let triangles = find_euler_triangles(range, threads);
 
