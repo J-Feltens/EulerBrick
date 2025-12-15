@@ -1,4 +1,4 @@
-use tqdm::{pbar, tqdm};
+use tqdm::pbar;
 
 fn is_euler_triangle(a: u64, b: u64) -> bool {
     // calc diagonals squared
@@ -22,12 +22,10 @@ fn find_euler_triangles(a_range: (u64, u64), b_range: (u64, u64)) -> Vec<(u64, u
 
     let mut triangles: Vec<(u64, u64)> = Vec::new();
 
-    let mut pbar = pbar(Some(
-        ((a_range.1 - a_range.0) * (b_range.1 - b_range.0)) as usize,
-    ));
+    let mut pbar = pbar(Some((a_range.1 - a_range.0) as usize));
     for a in a_range.0..a_range.1 {
+        pbar.update(1).unwrap();
         for b in b_range.0..b_range.1 {
-            pbar.update(1).unwrap();
             if is_euler_triangle(a, b) {
                 if !is_duplicate(a, b, &triangles) {
                     triangles.push((a, b));
@@ -40,7 +38,7 @@ fn find_euler_triangles(a_range: (u64, u64), b_range: (u64, u64)) -> Vec<(u64, u
 }
 
 fn main() {
-    let range = (1, 100__000);
+    let range = (1, 100_000);
 
     let triangles = find_euler_triangles(range, range);
 
