@@ -38,12 +38,12 @@ fn find_euler_triangles(a_range: (u64, u64), b_range: (u64, u64)) -> Vec<(u64, u
 }
 
 fn main() {
-    let range = (1, 100_000);
+    let range = (1, 10_000);
 
     let triangles = find_euler_triangles(range, range);
 
-    // println!("Found {} euler triangles:", triangles.len());
-    // for t in triangles.iter() {
-    //     println!("  {}, {}, {}", t.0, t.1, (t.0 * t.0) + (t.1 * t.1).isqrt());
-    // }
+    println!("Found {} euler triangles:", triangles.len());
+    for t in triangles.iter() {
+        println!("  {}, {}, {}", t.0, t.1, (t.0 * t.0) + (t.1 * t.1).isqrt());
+    }
 }
