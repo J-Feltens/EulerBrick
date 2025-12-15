@@ -1,82 +1,51 @@
-use std::os::unix::thread::JoinHandleExt;
-use std::thread;
-use std::thread::JoinHandle;
+use tqdm::{pbar, tqdm};
 
-fn linspace(start: u64, end: u64, steps: usize) -> Vec<u64> {
-    /*
-       generates array [start, end)
-    */
-    assert!(steps > 0);
-    assert!(start < end);
-
-    let range = end - start;
-    let mut v = Vec::with_capacity(steps);
-
-    for i in 0..steps {
-        // integer interpolation
-        let value = start + (range * i as u64) / steps as u64;
-        v.push(value);
-    }
-
-    v
-}
-
-fn is_euler_brick(a: u64, b: u64, c: u64) -> bool {
+fn is_euler_triangle(a: u64, b: u64) -> bool {
     // calc diagonals squared
-    let d1: f64 = ((a * a + b * b) as f64).sqrt();
-    let d2: f64 = ((a * a + c * c) as f64).sqrt();
-    let d3: f64 = ((b * b + c * c) as f64).sqrt();
+    let c: f64 = ((a * a + b * b) as f64).sqrt();
 
-    (d1).fract() == 0.0 && (d2).fract() == 0.0 && (d3).fract() == 0.0
+    c.fract() == 0.0
 }
 
-fn find_euler_brick_mt_special(a_range: (u64, u64), bc_range: u64) {
+fn is_duplicate(a: u64, b: u64, triangles: &Vec<(u64, u64)>) -> bool {
+    for triangle in triangles.iter() {
+        if (triangle.0 == a && triangle.1 == b) || (triangle.0 == b && triangle.1 == a) {
+            return true;
+        }
+    }
+    return false;
+}
+
+fn find_euler_triangles(a_range: (u64, u64), b_range: (u64, u64)) -> Vec<(u64, u64)> {
+    assert!(a_range.0 <= a_range.1);
+    assert!(b_range.0 <= b_range.1);
+
+    let mut triangles: Vec<(u64, u64)> = Vec::new();
+
+    // let mut pbar = pbar(Some(
+    //     ((a_range.1 - a_range.0) * (b_range.1 - b_range.0)) as usize,
+    // ));
     for a in a_range.0..a_range.1 {
-        for b in 1..bc_range {
-            for c in 1..bc_range {
-                if is_euler_brick(a, b, c) {
-                    println!(
-                        "Found non-perfect euler brick at a = {}, b = {}, c = {}",
-                        a, b, c
-                    );
+        for b in b_range.0..b_range.1 {
+            // pbar.update(1).unwrap();
+            if is_euler_triangle(a, b) {
+                if !is_duplicate(a, b, &triangles) {
+                    triangles.push((a, b));
                 }
             }
         }
     }
-}
-fn find_euler_brick(range: u64, threads: usize) {
-    let mut handles: Vec<JoinHandle<()>> = Vec::with_capacity(threads);
-    let section_idxs = linspace(1, range, threads);
 
-    for section in 0..threads {
-        let start_idx = section_idxs[section];
-        let end_idx = if section < threads - 1 {
-            section_idxs[section + 1]
-        } else {
-            range
-        };
-
-        let handle = thread::spawn(move || {
-            // spawn new compute thread
-            find_euler_brick_mt_special((start_idx, end_idx), range);
-        });
-        handles.push(handle);
-
-        println!(
-            "started thread {}/{} to compute interval [{}, {}]",
-            section + 1,
-            threads,
-            start_idx,
-            end_idx
-        );
-    }
-
-    // Wait for all threads to complete
-    for handle in handles {
-        handle.join().unwrap();
-    }
+    return triangles;
 }
 
 fn main() {
-    find_euler_brick(10000, 30);
+    let range = (1, 100__000);
+
+    let triangles = find_euler_triangles(range, range);
+
+    // println!("Found {} euler triangles:", triangles.len());
+    // for t in triangles.iter() {
+    //     println!("  {}, {}, {}", t.0, t.1, (t.0 * t.0) + (t.1 * t.1).isqrt());
+    // }
 }
