@@ -31,15 +31,38 @@ fn store_triangles(triangles: &Vec<(u64, u64)>, path: &str) {
     }
 }
 
-fn find_euler_triangles(range: (u64, u64)) -> Vec<(u64, u64)> {
-    assert!(range.0 <= range.1);
+/*
+       let handle = thread::spawn(move || {
+           // spawn new compute thread
+           find_euler_brick_mt_special((start_idx, end_idx), range);
+       });
+       handles.push(handle);
+
+       println!(
+           "started thread {}/{} to compute interval [{}, {}]",
+           section + 1,
+           threads,
+           start_idx,
+           end_idx
+       );
+   }
+
+   // Wait for all threads to complete
+   for handle in handles {
+       handle.join().unwrap();
+   }
+*/
+
+fn find_euler_triangles_mt(a_range: (u64, u64), b_range: (u64, u64)) -> Vec<(u64, u64)> {
+    assert!(a_range.0 <= a_range.1);
+    assert!(b_range.0 <= b_range.1);
 
     let mut triangles: Vec<(u64, u64)> = Vec::new();
 
-    let mut pbar = pbar(Some((range.1 - range.0) as usize));
-    for a in range.0..range.1 {
+    let mut pbar = pbar(Some((a_range.1 - a_range.0) as usize));
+    for a in a_range.0..a_range.1 {
         pbar.update(1).unwrap();
-        for b in range.0..range.1 {
+        for b in b_range.0..b_range.1 {
             if is_euler_triangle(a, b) {
                 if !is_duplicate(a, b, &triangles) {
                     triangles.push((a, b));
@@ -51,9 +74,13 @@ fn find_euler_triangles(range: (u64, u64)) -> Vec<(u64, u64)> {
     triangles
 }
 
+fn find_euler_triangles(range: (u64, u64), threads: usize) -> Vec<(u64, u64)> {}
+
 fn main() {
     let range = (1, 1_000_000);
-    let triangles = find_euler_triangles(range);
+    let threads = 3;
+
+    let triangles = find_euler_triangles(range, threads);
 
     store_triangles(&triangles, "triangles.txt");
     println!(
