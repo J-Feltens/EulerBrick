@@ -1,6 +1,5 @@
-use std::env;
 use std::fs::File;
-use std::io::{BufWriter, Error, ErrorKind, Write};
+use std::io::{BufWriter, Write};
 use tqdm::pbar;
 
 const DEFAULT_RANGE: (u64, u64) = (1, 10_000);
