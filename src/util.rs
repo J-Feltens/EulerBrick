@@ -11,7 +11,7 @@ fn linspace(start: u64, end: u64, steps: usize) -> Vec<u64> {
     for i in 0..steps {
         v.push(start + (range * i as u64) / steps as u64);
     }
-    v.push(end); // Ensure the exact end bound is included in our sections
+    v.push(end);
     v
 }
 
@@ -23,14 +23,12 @@ fn is_euler_triangle(a: u64, b: u64) -> bool {
 fn calc_euler_triangles_stream(
     thread_id: usize,
     a_range: (u64, u64),
-    global_max: u64,
+    b_range: (u64, u64),
     print_pbar: bool,
 ) {
-    // 1. Give each thread its own dedicated file
     let file_name = format!("triangles_part_{}.txt", thread_id);
     let f = File::create(&file_name).expect("Failed to create file");
 
-    // 2. Wrap it in a BufWriter so it writes in large, fast memory chunks
     let mut writer = BufWriter::new(f);
 
     let mut progress_bar = if print_pbar {
@@ -44,17 +42,12 @@ fn calc_euler_triangles_stream(
             pb.update(1).ok();
         }
 
-        // 3. THE MAGIC TRICK: Start `b` at `a` instead of `b_range.0`.
-        // This inherently prevents duplicates like (4, 3) if we already found (3, 4).
-        for b in a..global_max {
+        for b in b_range.0..b_range.1 {
             if is_euler_triangle(a, b) {
-                // Stream directly to the file buffer, no massive Vec required
                 writeln!(writer, "{},{}", a, b).unwrap();
             }
         }
     }
-
-    // BufWriter flushes to disk automatically when it drops at the end of the function
 }
 
 pub fn run_multithreaded(range: (u64, u64), threads: usize) {
@@ -64,19 +57,12 @@ pub fn run_multithreaded(range: (u64, u64), threads: usize) {
     for i in 0..threads {
         let range_from = section_idxs[i];
         let range_to = section_idxs[i + 1];
-        let global_max = range.1;
         let thread_id = i + 1;
 
-        // Only print the progress bar for the first thread to avoid console garble
         let is_first_thread = i == 0;
 
         let handle = thread::spawn(move || {
-            calc_euler_triangles_stream(
-                thread_id,
-                (range_from, range_to),
-                global_max,
-                is_first_thread,
-            )
+            calc_euler_triangles_stream(thread_id, (range_from, range_to), range, is_first_thread)
         });
         handles.push(handle);
     }
