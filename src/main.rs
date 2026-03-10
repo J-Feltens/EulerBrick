@@ -1,8 +1,8 @@
-use crate::util::{calc_euler_triangles, sort_triangles, store_triangles};
+use crate::util::run_multithreaded;
 use std::env;
 mod util;
 
-pub const DEBUG_MODE: bool = false;
+pub const VERBOSE: bool = false;
 
 pub const DEFAULT_THREADS: usize = 1;
 pub const DEFAULT_RANGE: (u64, u64) = (1, 10_u64.pow(3));
@@ -42,19 +42,14 @@ fn parse_args() -> (usize, (u64, u64)) {
 fn main() {
     let (threads, range) = parse_args();
 
-    let triangles = calc_euler_triangles(range, threads, DEBUG_MODE);
+    run_multithreaded(range, threads);
 
     println!(
-        "Found {} euler triangles in range {}, {}",
-        triangles.len(),
-        range.0,
-        range.1
+        "Calculating and writing directly to disk using {} thread(s)...",
+        threads
     );
 
-    if DEBUG_MODE {
-        let triangles_sorted_a = sort_triangles(&triangles, false);
-        let triangles_sorted_b = sort_triangles(&triangles, true);
-        store_triangles(&triangles_sorted_a, "triangles_sorted_a.txt");
-        store_triangles(&triangles_sorted_b, "triangles_sorted_b.txt");
-    }
+    run_multithreaded(range, threads);
+
+    println!("Done! Check the generated triangles_part_X.txt files.");
 }
