@@ -2,8 +2,6 @@ use crate::util::run_multithreaded;
 use std::env;
 mod util;
 
-pub const VERBOSE: bool = false;
-
 pub const DEFAULT_THREADS: usize = 1;
 pub const DEFAULT_RANGE: (u64, u64) = (1, 10_u64.pow(3));
 
@@ -42,8 +40,6 @@ fn parse_args() -> (usize, (u64, u64)) {
 fn main() {
     let (threads, range) = parse_args();
 
-    run_multithreaded(range, threads);
-
     println!(
         "Calculating and writing directly to disk using {} thread(s)...",
         threads
@@ -51,5 +47,6 @@ fn main() {
 
     run_multithreaded(range, threads);
 
-    println!("Done! Check the generated triangles_part_X.txt files.");
+    util::concat_files(threads, "triangles.txt");
+    println!("done.");
 }

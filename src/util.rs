@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufWriter, Write};
+use std::io::{BufReader, BufWriter, Write};
 use std::thread;
 use tqdm::pbar;
 
@@ -86,17 +86,22 @@ pub fn run_multithreaded(range: (u64, u64), threads: usize) {
         handle.join().unwrap();
     }
 }
+pub fn concat_files(threads: usize, output_file_path: &str) {
+    let f = File::create(output_file_path).expect("Failed to create output file");
+    let mut writer = BufWriter::new(f);
 
-fn main() {
-    let range = (1, 10_000);
-    let threads = 4;
+    println!("Merging {} files into {}...", threads, output_file_path);
+    let mut progress_bar = pbar(Some(threads));
 
-    println!(
-        "Calculating and writing directly to disk using {} thread(s)...",
-        threads
-    );
+    for i in 1..=threads {
+        let file_name = format!("triangles_part_{}.txt", i);
+        if let Ok(part_file) = File::open(&file_name) {
+            let mut reader = BufReader::new(part_file);
+            std::io::copy(&mut reader, &mut writer).expect("Failed to copy data");
+        } else {
+            eprintln!("Warning: Could not find {}", file_name);
+        }
 
-    run_multithreaded(range, threads);
-
-    println!("Done! Check the generated triangles_part_X.txt files.");
+        progress_bar.update(1).ok();
+    }
 }
