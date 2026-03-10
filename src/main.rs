@@ -42,7 +42,7 @@ fn parse_args() -> (usize, (u64, u64)) {
 fn main() {
     let (threads, range) = parse_args();
 
-    let triangles = calc_euler_triangles(range, threads);
+    let triangles = calc_euler_triangles(range, threads, DEBUG_MODE);
 
     println!(
         "Found {} euler triangles in range {}, {}",

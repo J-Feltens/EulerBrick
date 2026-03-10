@@ -71,7 +71,11 @@ fn calc_euler_triangles_mt(
     triangles
 }
 
-pub fn calc_euler_triangles(range: (u64, u64), threads: usize) -> Vec<(u64, u64)> {
+pub fn calc_euler_triangles(
+    range: (u64, u64),
+    threads: usize,
+    print_pbars: bool,
+) -> Vec<(u64, u64)> {
     let mut triangles = Vec::new();
 
     // setup multithreading
@@ -87,7 +91,7 @@ pub fn calc_euler_triangles(range: (u64, u64), threads: usize) -> Vec<(u64, u64)
         };
         let handle = thread::spawn(move || {
             // spawn new compute thread
-            calc_euler_triangles_mt((range_from, range_to), range, true)
+            calc_euler_triangles_mt((range_from, range_to), range, print_pbars)
         });
         handles.push(handle);
     }
