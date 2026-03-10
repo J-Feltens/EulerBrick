@@ -39,15 +39,26 @@ pub fn is_duplicate(a: u64, b: u64, triangles: &Vec<(u64, u64)>) -> bool {
     false
 }
 
-fn calc_euler_triangles_mt(a_range: (u64, u64), b_range: (u64, u64)) -> Vec<(u64, u64)> {
+fn calc_euler_triangles_mt(
+    a_range: (u64, u64),
+    b_range: (u64, u64),
+    print_pbar: bool,
+) -> Vec<(u64, u64)> {
     assert!(a_range.0 <= a_range.1);
     assert!(b_range.0 <= b_range.1);
 
     let mut triangles: Vec<(u64, u64)> = Vec::new();
 
-    let mut pbar = pbar(Some((a_range.1 - a_range.0) as usize));
+    let mut progress_bar = if print_pbar {
+        Some(pbar(Some((a_range.1 - a_range.0) as usize)))
+    } else {
+        None
+    };
+
     for a in a_range.0..a_range.1 {
-        pbar.update(1).unwrap();
+        if let Some(ref mut pb) = progress_bar {
+            pb.update(1).ok();
+        }
         for b in b_range.0..b_range.1 {
             if is_euler_triangle(a, b) {
                 if !is_duplicate(a, b, &triangles) {
@@ -76,7 +87,7 @@ pub fn calc_euler_triangles(range: (u64, u64), threads: usize) -> Vec<(u64, u64)
         };
         let handle = thread::spawn(move || {
             // spawn new compute thread
-            calc_euler_triangles_mt((range_from, range_to), range)
+            calc_euler_triangles_mt((range_from, range_to), range, true)
         });
         handles.push(handle);
     }
@@ -91,14 +102,16 @@ pub fn calc_euler_triangles(range: (u64, u64), threads: usize) -> Vec<(u64, u64)
 
 pub fn sort_triangles(triangles: &Vec<(u64, u64)>, sort_secondary: bool) -> Vec<(u64, u64)> {
     let mut sorted = triangles.clone();
-    for i in 0..triangles.len() {
-        for n in 0..triangles.len() - 1 {
+    for _ in 0..sorted.len() {
+        for n in 0..sorted.len() - 1 {
             if sort_secondary {
-                if triangles[n].1 > triangles[n + 1].1 {
+                // FIXED: Now comparing `sorted` instead of `triangles`
+                if sorted[n].1 > sorted[n + 1].1 {
                     (sorted[n], sorted[n + 1]) = (sorted[n + 1], sorted[n]);
                 }
             } else {
-                if triangles[n].0 > triangles[n + 1].0 {
+                // FIXED: Now comparing `sorted` instead of `triangles`
+                if sorted[n].0 > sorted[n + 1].0 {
                     (sorted[n], sorted[n + 1]) = (sorted[n + 1], sorted[n]);
                 }
             }
@@ -109,7 +122,7 @@ pub fn sort_triangles(triangles: &Vec<(u64, u64)>, sort_secondary: bool) -> Vec<
 }
 
 pub fn store_triangles(triangles: &Vec<(u64, u64)>, path: &str) {
-    let mut f = File::create(path).expect("Failed to write to file");
+    let f = File::create(path).expect("Failed to write to file");
     let mut writer = BufWriter::new(f);
 
     writeln!(writer, "{}", triangles.len()).unwrap();
