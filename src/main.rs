@@ -1,7 +1,5 @@
 use crate::util::{calc_euler_triangles, sort_triangles, store_triangles};
-use std::arch::aarch64::uint64x1_t;
 mod util;
-const DEFAULT_RANGE: (u64, u64) = (1, 10_000);
 
 fn main() {
     let range = (1, 10_u64.pow(6));
