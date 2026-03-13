@@ -55,8 +55,8 @@ def main() -> None:
     print(f"Reduced image size: {im_reduced.shape}")
     print(f"Maximum pixel value: {np.max(im_reduced)}")
 
-    # ax.imshow(im_reduced, cmap="gray")
-    # plt.savefig('euler_analysis.png')
+    ax.imshow(im_reduced, cmap="gray")
+    plt.savefig('euler_analysis.png')
     # plt.show()
 
 
