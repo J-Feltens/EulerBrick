@@ -2,6 +2,9 @@ use crate::util::run_multithreaded;
 use std::env;
 mod util;
 
+pub const OUTPUT_FILE_NAME: &str = "triangles.txt";
+pub const OUTPUT_FILE_PATH: &str = "results/";
+
 pub const DEFAULT_THREADS: usize = 1;
 pub const DEFAULT_RANGE: (u64, u64) = (1, 10_u64.pow(3));
 
@@ -47,6 +50,9 @@ fn main() {
 
     run_multithreaded(range, threads);
 
-    util::concat_files(threads, "triangles.txt");
+    util::concat_files(
+        threads,
+        format!("{}{}", OUTPUT_FILE_PATH, OUTPUT_FILE_NAME).as_str(),
+    );
     println!("done.");
 }

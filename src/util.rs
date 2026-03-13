@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufReader, BufWriter, Write};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::thread;
 use tqdm::pbar;
 
@@ -26,7 +26,7 @@ fn calc_euler_triangles_stream(
     b_range: (u64, u64),
     print_pbar: bool,
 ) {
-    let file_name = format!("triangles_part_{}.txt", thread_id);
+    let file_name = format!("results/tmp/triangles_part_{}.txt", thread_id);
     let f = File::create(&file_name).expect("Failed to create file");
 
     let mut writer = BufWriter::new(f);
@@ -80,7 +80,7 @@ pub fn concat_files(threads: usize, output_file_path: &str) {
     let mut progress_bar = pbar(Some(threads));
 
     for i in 1..=threads {
-        let file_name = format!("triangles_part_{}.txt", i);
+        let file_name = format!("results/tmp/triangles_part_{}.txt", i);
         if let Ok(part_file) = File::open(&file_name) {
             let mut reader = BufReader::new(part_file);
             std::io::copy(&mut reader, &mut writer).expect("Failed to copy data");
