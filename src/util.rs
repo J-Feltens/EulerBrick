@@ -43,6 +43,8 @@ pub fn get_problem_part(max_side_length: usize, part: usize) -> Array2<u64> {
 }
 
 pub fn is_euler_triangle(a_sq: u64, b_sq: u64) -> bool {
+    // checks if the right-angled triangle described by
+    // sqrt(a) and sqrt(b) is an a euler triangle
     let c: f64 = (a_sq as f64 + b_sq as f64).sqrt();
     c.fract() == 0.0
 }
@@ -65,64 +67,29 @@ pub fn solve_problem_part(problem_part: Array2<u64>) {
     }
 }
 
-//
-// fn is_euler_triangle(a: u64, b: u64) -> bool {
-//     let c: f64 = ((a * a + b * b) as f64).sqrt();
-//     c.fract() == 0.0
-// }
-//
-// fn calc_euler_triangles_stream(
-//     thread_id: usize,
-//     a_range: (u64, u64),
-//     b_range: (u64, u64),
-//     print_pbar: bool,
-// ) {
-//     let file_name = format!("results/tmp/triangles_part_{}.txt", thread_id);
-//     let f = File::create(&file_name).expect("Failed to create file");
-//
-//     let mut writer = BufWriter::new(f);
-//
-//     let mut progress_bar = if print_pbar {
-//         Some(pbar(Some((a_range.1 - a_range.0) as usize)))
-//     } else {
-//         None
-//     };
-//
-//     for a in a_range.0..a_range.1 {
-//         if let Some(ref mut pb) = progress_bar {
-//             pb.update(1).ok();
-//         }
-//
-//         for b in b_range.0..b_range.1 {
-//             if is_euler_triangle(a, b) {
-//                 writeln!(writer, "{},{}", a, b).unwrap();
-//             }
-//         }
-//     }
-// }
-//
-// pub fn run_multithreaded(range: (u64, u64), threads: usize) {
-//     let section_idxs = linspace(range.0, range.1, threads);
-//     let mut handles = Vec::new();
-//
-//     for i in 0..threads {
-//         let range_from = section_idxs[i];
-//         let range_to = section_idxs[i + 1];
-//         let thread_id = i + 1;
-//
-//         let is_first_thread = i == 0;
-//
-//         let handle = thread::spawn(move || {
-//             calc_euler_triangles_stream(thread_id, (range_from, range_to), range, is_first_thread)
-//         });
-//         handles.push(handle);
-//     }
-//
-//     // Wait for all threads to finish writing their files
-//     for handle in handles {
-//         handle.join().unwrap();
-//     }
-// }
+pub fn run_multithreaded(max_side_length: usize, threads: usize) {
+    let section_idxs = linspace(range.0, range.1, threads);
+    let mut handles = Vec::new();
+
+    for i in 0..threads {
+        let range_from = section_idxs[i];
+        let range_to = section_idxs[i + 1];
+        let thread_id = i + 1;
+
+        let is_first_thread = i == 0;
+
+        let handle = thread::spawn(move || {
+            calc_euler_triangles_stream(thread_id, (range_from, range_to), range, is_first_thread)
+        });
+        handles.push(handle);
+    }
+
+    // Wait for all threads to finish writing their files
+    for handle in handles {
+        handle.join().unwrap();
+    }
+}
+
 // pub fn concat_files(threads: usize, output_file_path: &str) {
 //     let f = File::create(output_file_path).expect("Failed to create output file");
 //     let mut writer = BufWriter::new(f);

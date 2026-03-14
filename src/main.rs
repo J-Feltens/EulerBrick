@@ -41,8 +41,8 @@ fn parse_args() -> (usize, u64) {
 fn main() {
     let (threads, max_side_length) = parse_args();
 
-    for i in tqdm(0..max_side_length) {
-        let problem = get_problem_part(max_side_length as usize, i as usize);
+    for part in tqdm(0..max_side_length) {
+        let problem = get_problem_part(max_side_length as usize, part as usize);
         let problem_size = problem.nrows();
 
         solve_problem_part(problem);
