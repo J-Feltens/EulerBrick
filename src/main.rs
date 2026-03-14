@@ -1,4 +1,5 @@
-use crate::util::run_multithreaded;
+use crate::util::{create_problem_matrix, get_problem_part, run_multithreaded};
+use std::cmp::max;
 use std::env;
 mod util;
 
@@ -6,15 +7,15 @@ pub const OUTPUT_FILE_NAME: &str = "triangles.txt";
 pub const OUTPUT_FILE_PATH: &str = "results/";
 
 pub const DEFAULT_THREADS: usize = 1;
-pub const DEFAULT_RANGE: (u64, u64) = (1, 10_u64.pow(3));
+pub const DEFAULT_RANGE: u64 = 10_u64.pow(3);
 
-fn parse_args() -> (usize, (u64, u64)) {
+fn parse_args() -> (usize, u64) {
     // Collect command line arguments into a vector
     let args: Vec<String> = env::args().collect();
 
     // Set your default values
     let mut threads = DEFAULT_THREADS;
-    let mut range = DEFAULT_RANGE;
+    let mut max_side_length = DEFAULT_RANGE;
 
     // Parse thread count if provided
     if args.len() >= 3 {
@@ -23,36 +24,28 @@ fn parse_args() -> (usize, (u64, u64)) {
             .expect("Error: Thread count must be a positive integer");
     }
 
-    // Parse range (start and end) if provided
-    if args.len() >= 4 {
-        let start = args[2]
+    // Parse max side length if provided
+    if args.len() >= 3 {
+        max_side_length = args[2]
             .parse::<u64>()
-            .expect("Error: Range start must be a positive integer");
-        let end = args[3]
-            .parse::<u64>()
-            .expect("Error: Range end must be a positive integer");
-        range = (start, end);
+            .expect("Error: Max side length must be a positive integer");
     } else if args.len() == 3 {
         println!(
             "Warning: You provided a start range but no end range. Using default range instead."
         );
     }
 
-    (threads, range)
+    (threads, max_side_length)
 }
 fn main() {
-    let (threads, range) = parse_args();
+    let (threads, max_side_length) = parse_args();
+
+    let problem = create_problem_matrix(max_side_length as usize);
 
     println!(
-        "Calculating and writing directly to disk using {} thread(s)...",
-        threads
+        "Problem shape: {}, {}",
+        problem.shape()[0],
+        problem.shape()[1]
     );
-
-    run_multithreaded(range, threads);
-
-    util::concat_files(
-        threads,
-        format!("{}{}", OUTPUT_FILE_PATH, OUTPUT_FILE_NAME).as_str(),
-    );
-    println!("done.");
+    println!("Problem: {}", problem);
 }

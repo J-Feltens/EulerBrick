@@ -57,7 +57,7 @@ def main() -> None:
 
     ax.imshow(im_reduced, cmap="gray")
     plt.savefig('euler_analysis.png')
-    # plt.show()
+    plt.show()
 
 
 if __name__ == "__main__":

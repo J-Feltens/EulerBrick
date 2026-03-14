@@ -1,3 +1,4 @@
+use ndarray::Array2;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::thread;
@@ -13,6 +14,50 @@ fn linspace(start: u64, end: u64, steps: usize) -> Vec<u64> {
     }
     v.push(end);
     v
+}
+
+pub fn get_problem_part(max_side_length: u64, part: usize) -> (Vec<u64>, Vec<u64>) {
+    let mut problem_part = (
+        vec![1_u64; max_side_length as usize + 1],
+        vec![1_u64; max_side_length as usize + 1],
+    );
+
+    // fill the top <part> elements with the "end" of the problem space
+    for i in 0..part + 1 {
+        problem_part.0[i] = max_side_length - part as u64 + i as u64;
+        problem_part.1[i] = max_side_length - part as u64;
+    }
+
+    // fill the bottom <max_length> - <part> elements with the "start" of the problem space
+    for i in part + 1..max_side_length as usize {
+        problem_part.0[i] = i as u64;
+        problem_part.1[i] = part as u64 + 1;
+    }
+
+    problem_part
+}
+
+pub fn create_problem_matrix(max_side_length: usize) -> Array2<u64> {
+    let size = max_side_length + 1;
+
+    Array2::from_shape_fn((max_side_length / 2, size * 2), |(part, col)| {
+        if col < size {
+            // Logic for your first Vec (v0)
+            if col <= part {
+                (max_side_length - part + col) as u64
+            } else {
+                col as u64
+            }
+        } else {
+            // Logic for your second Vec (v1)
+            let i = col - size;
+            if i <= part {
+                (max_side_length - part) as u64
+            } else {
+                (part + 1) as u64
+            }
+        }
+    })
 }
 
 fn is_euler_triangle(a: u64, b: u64) -> bool {
