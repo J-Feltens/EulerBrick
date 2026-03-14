@@ -41,5 +41,6 @@ fn main() {
     let (threads, max_side_length) = parse_args();
 
     let problem = get_problem_part(max_side_length as usize, 1);
-    println!("Problem: {}", problem);
+    let problem_size = problem.nrows();
+    println!("Problem size: {}", problem_size);
 }
