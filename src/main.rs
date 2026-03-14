@@ -1,4 +1,6 @@
-use crate::util::{get_problem_part, solve_problem_part};
+#![allow(warnings)]
+
+use crate::util::{distribute_and_solve, get_problem_part, solve_problem_part};
 use std::cmp::max;
 use std::env;
 mod util;
@@ -41,10 +43,5 @@ fn parse_args() -> (usize, u64) {
 fn main() {
     let (threads, max_side_length) = parse_args();
 
-    for part in tqdm(0..max_side_length) {
-        let problem = get_problem_part(max_side_length as usize, part as usize);
-        let problem_size = problem.nrows();
-
-        solve_problem_part(problem);
-    }
+    distribute_and_solve(max_side_length, threads);
 }
