@@ -4,29 +4,65 @@ use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::thread;
 use tqdm::pbar;
 
-pub fn get_problem_part(max_side_length: usize, part: usize) -> Array2<u32> {
+pub fn get_problem_part(max_side_length: usize, part: usize) -> Array2<u64> {
+    // returns a "problem part", i.e. one column from the rectangle problem space
+    // e.g. for max_side_length = 6, part = 1:
+    // [[5, 5],
+    //  [6, 5],
+    //  [2, 2],
+    //  [3, 2],
+    //  [4, 2],
+    //  [5, 2],
+    //  [6, 2]]
+    //
+    // additionally squares each entry, so actually returns
+    // [[25, 25],
+    //  [36, 25],
+    //  [ 4,  4],
+    //  [ 9,  4],
+    //  [16,  4],
+    //  [25,  4],
+    //  [36,  4]]
     let size = max_side_length + 1;
 
     Array2::from_shape_fn((size, 2), |(row, col)| {
         if row <= part {
             if col == 0 {
-                (max_side_length - part + row) as u32
+                (max_side_length - part + row) as u64 * (max_side_length - part + row) as u64
             } else {
-                (max_side_length - part) as u32
+                (max_side_length - part) as u64 * (max_side_length - part) as u64
             }
         } else {
             if col == 0 {
-                row as u32
+                row as u64 * row as u64
             } else {
-                (part + 1) as u32
+                (part + 1) as u64 * (part + 1) as u64
             }
         }
     })
 }
 
-fn is_euler_triangle(a_sq: u64, b_sq: u64) -> bool {
+pub fn is_euler_triangle(a_sq: u64, b_sq: u64) -> bool {
     let c: f64 = (a_sq as f64 + b_sq as f64).sqrt();
     c.fract() == 0.0
+}
+
+pub fn solve_problem_part(problem_part: Array2<u64>) {
+    if let Some(flat_data) = problem_part.as_slice() {
+        // .chunks_exact(2) safely slices the 1D array into pairs [a, b]
+        for chunk in flat_data.chunks_exact(2) {
+            // Because the chunk is exactly 2 items, LLVM knows chunk[0]
+            // and chunk[1] are safe. Zero bounds-checking overhead!
+            let a_sq = chunk[0];
+            let b_sq = chunk[1];
+
+            if is_euler_triangle(a_sq, b_sq) {
+                // println!("Match found: a={}, b={}", a_sq.isqrt(), b_sq.isqrt());
+            }
+        }
+    } else {
+        println!("Memory was not contiguous!");
+    }
 }
 
 //

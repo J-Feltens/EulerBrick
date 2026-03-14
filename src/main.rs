@@ -1,7 +1,8 @@
-use crate::util::{get_problem_part, run_multithreaded};
+use crate::util::{get_problem_part, solve_problem_part};
 use std::cmp::max;
 use std::env;
 mod util;
+use tqdm::tqdm;
 
 pub const OUTPUT_FILE_NAME: &str = "triangles.txt";
 pub const OUTPUT_FILE_PATH: &str = "results/";
@@ -40,7 +41,10 @@ fn parse_args() -> (usize, u64) {
 fn main() {
     let (threads, max_side_length) = parse_args();
 
-    let problem = get_problem_part(max_side_length as usize, 1);
-    let problem_size = problem.nrows();
-    println!("Problem size: {}", problem_size);
+    for i in tqdm(0..max_side_length) {
+        let problem = get_problem_part(max_side_length as usize, i as usize);
+        let problem_size = problem.nrows();
+
+        solve_problem_part(problem);
+    }
 }
