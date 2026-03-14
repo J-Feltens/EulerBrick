@@ -1,4 +1,4 @@
-use crate::util::{create_problem_matrix, get_problem_part, run_multithreaded};
+use crate::util::{get_problem_part, run_multithreaded};
 use std::cmp::max;
 use std::env;
 mod util;
@@ -40,12 +40,6 @@ fn parse_args() -> (usize, u64) {
 fn main() {
     let (threads, max_side_length) = parse_args();
 
-    let problem = create_problem_matrix(max_side_length as usize);
-
-    println!(
-        "Problem shape: {}, {}",
-        problem.shape()[0],
-        problem.shape()[1]
-    );
+    let problem = get_problem_part(max_side_length as usize, 1);
     println!("Problem: {}", problem);
 }
