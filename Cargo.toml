@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 ndarray = "0.17.2"
 tqdm = "0.8.0"
+rayon = "1.11.0"
