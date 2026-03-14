@@ -1,6 +1,7 @@
 use ndarray::Array2;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 use tqdm::tqdm;
 
@@ -61,7 +62,8 @@ pub fn is_euler_triangle(a_sq: u64, b_sq: u64) -> bool {
     c.fract() == 0.0
 }
 
-pub fn solve_problem_part(problem_part: Array2<u64>) {
+pub fn solve_problem_part(problem_part: Array2<u64>) -> u64 {
+    let mut triangles_found = 0;
     if let Some(flat_data) = problem_part.as_slice() {
         for chunk in flat_data.chunks_exact(2) {
             let a_sq = chunk[0];
@@ -69,11 +71,14 @@ pub fn solve_problem_part(problem_part: Array2<u64>) {
 
             if is_euler_triangle(a_sq, b_sq) {
                 // println!("Match found: a={}, b={}", a_sq.isqrt(), b_sq.isqrt());
+                triangles_found += 1;
             }
         }
     } else {
         println!("Memory was not contiguous!");
     }
+
+    triangles_found
 }
 pub fn distribute_and_solve(max_side_length: u64, thread_count: usize) {
     let parts = max_side_length as usize;
@@ -83,18 +88,28 @@ pub fn distribute_and_solve(max_side_length: u64, thread_count: usize) {
     // 2. Calculate the chunk size (rounding up to ensure we cover everything)
     let chunk_size = (parts + thread_count - 1) / thread_count;
 
+    let total_matches = AtomicU64::new(0);
     // 3. Create a thread scope
     thread::scope(|s| {
         // .chunks() automatically slices the Vec into safe, non-overlapping arrays
         for chunk in indices.chunks(chunk_size) {
             // Spawn a thread for this specific chunk
+            let matches_ref = &total_matches;
             s.spawn(move || {
                 // Loop through the sub-sequence assigned to this thread
                 for &part_idx in chunk {
                     let problem_part = get_problem_part(max_side_length as usize, part_idx);
-                    solve_problem_part(problem_part);
+                    let triangles_found = solve_problem_part(problem_part);
+                    if triangles_found > 0 {
+                        matches_ref.fetch_add(triangles_found, Ordering::Relaxed);
+                    }
                 }
             });
         }
     });
+
+    println!(
+        "Total Euler triangles found: {}",
+        total_matches.load(Ordering::Relaxed)
+    );
 }
